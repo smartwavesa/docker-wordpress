@@ -13,3 +13,5 @@ To Build the image :
 docker build --build-arg GIT_REPO=your-git-repository-withcredentials-if-necesasry  --force-rm --no-cache  -t image_name .
 
 To run :
+
+docker run --name container-name --privileged=true -e  WORDPRESS_DB_HOST=your-mysql-host -e WORDPRESS_DB_NAME=your-db-name -e WORDPRESS_DB_PASSWORD=your-db-password -d image_name
