@@ -1,4 +1,10 @@
-FROM php:5.6-fpm
+FROM php:5.6-apache
+
+# Maintainer
+# ----------
+MAINTAINER Mohamed Bouchenafa <mbouchenafa@smartwavesa.com>
+
+RUN a2enmod rewrite expires
 
 # install the PHP extensions we need
 RUN apt-get update && apt-get install -y libpng12-dev libjpeg-dev && rm -rf /var/lib/apt/lists/* \
@@ -16,10 +22,10 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-VOLUME /var/www/html
+#
 
-ENV WORDPRESS_VERSION 4.5.2
-ENV WORDPRESS_SHA1 bab94003a5d2285f6ae76407e7b1bbb75382c36e
+ENV WORDPRESS_VERSION 4.5
+ENV WORDPRESS_SHA1 439f09e7a948f02f00e952211a22b8bb0502e2e2
 
 # upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
 RUN curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz \
@@ -28,8 +34,30 @@ RUN curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VER
 	&& rm wordpress.tar.gz \
 	&& chown -R www-data:www-data /usr/src/wordpress
 
-COPY docker-entrypoint.sh /entrypoint.sh
 
+# Install GIT
+# -------------------------------------------------------------
+RUN 	apt-get update && \
+		apt-get -y install git-core
+
+# Install VI
+# -------------------------------------------------------------
+RUN 	apt-get -y install vim
+
+# Cloning the WP-CONTENT from GIT
+# -------------------------------------------------------------
+ARG GIT_REPO 
+
+RUN 	cd /var/www/html && \
+		rm -rf * && \
+		git clone $GIT_REPO /var/www/html
+
+
+#Define the VOLUME /var/www/html
+VOLUME /var/www/html
+
+COPY docker-entrypoint.sh /entrypoint.sh
+RUN		chmod 777 /entrypoint.sh
 # grr, ENTRYPOINT resets CMD now
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]
