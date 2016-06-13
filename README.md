@@ -11,3 +11,5 @@ The goal : Have a dockerized website  CI - CD ready.
 To Build the image :
 
 docker build --build-arg GIT_REPO=your-git-repository-withcredentials-if-necesasry  --force-rm --no-cache  -t image_name .
+
+To run :
