@@ -1,6 +1,6 @@
 # About this Repo
 
-This is the Git repo of the [Smartwave's](https://www.smartwavesa.com/) Docker image for Wordpress.
+This is the Git repo of the [Smartwave's](https://www.smartwavesa.com/) Docker image for Wordpress. (Version 4.5)
 
 It's a Docker image for wordpess based on the [official image](https://docs.docker.com/docker-hub/official_repos/) for [wordpress](https://registry.hub.docker.com/_/wordpress/).
 
