@@ -22,7 +22,6 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-#
 
 ENV WORDPRESS_VERSION 4.5
 ENV WORDPRESS_SHA1 439f09e7a948f02f00e952211a22b8bb0502e2e2
@@ -51,10 +50,15 @@ ARG GIT_REPO
 RUN 	cd /var/www/html && \
 		rm -rf * && \
 		git clone $GIT_REPO /var/www/html
+		
+#SSL Config
+# -------------------------------------------------------------
+RUN cp /etc/apache2/mods-available/ssl.load  /etc/apache2/mods-enabled
 
 
-#Define the VOLUME /var/www/html
-VOLUME /var/www/html
+VOLUME /etc/pki
+
+
 
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN		chmod 777 /entrypoint.sh

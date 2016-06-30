@@ -4,6 +4,42 @@ set -e
 if [[ "$TARGET"=='DEV' ]]; then
     mv /var/www/html/.htaccess /var/www/html/prod.htaccess
     cat > /var/www/html/.htaccess <<-'EOF'
+
+# BEGIN Cookies expire
+<ifmodule mod_expires.c>
+<Filesmatch "\.(jpg|jpeg|png|gif|js|css|swf|ico|woff|mp3)$">
+    ExpiresActive on
+    ExpiresDefault "access plus 2 days"
+</Filesmatch>
+</ifmodule>
+# END Cookies expire
+
+# Security
+
+<IfModule mod_headers.c>
+    Header set Content-Security-Policy "default-src 'self';script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https:;"
+    Header set X-Content-Type-Options nosniff
+    Header set X-Frame-Options DENY
+    Header set X-XSS-Protection "1; mode=block"
+    Header always edit Set-Cookie (.*) "$1; HTTPOnly; Secure"
+</IfModule>
+
+# END Security
+
+
+<IfModule mod_expires.c>
+# Add default Expires header
+    ExpiresActive On
+    ExpiresDefault "access plus 1 week"
+</IfModule>
+
+FileETag None
+Options -Indexes
+
+<ifModule mod_headers.c>
+    Header set Connection keep-alive
+</ifModule>
+
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /
@@ -12,7 +48,38 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]
 </IfModule>
 EOF
-  fi
+fi
+
+if [ -z "$URL" ]; then
+    echo >&2 'error: missing required URL environment variable'
+    echo >&2 '  Did you forget to -e URL=... ?'
+    echo >&2
+    exit 1
+else
+
+if [ -z "$CERTIFICATE_NAME" ]; then
+  CERTIFICATE_NAME='wordpress.crt'
+fi
+if [ -z "$KEY_NAME" ]; then
+  KEY_NAME='wordpress.key'
+fi
+
+if [ -z "$CHAIN_NAME" ]; then
+  CHAIN_NAME='chain.crt'
+fi
+
+echo "ServerName $URL:443" > /etc/apache2/mods-enabled/ssl.conf
+echo "SSLProtocol all -SSLv2 -SSLv3" >> /etc/apache2/mods-enabled/ssl.conf
+echo "SSLHonorCipherOrder on">> /etc/apache2/mods-enabled/ssl.conf
+echo 'SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH EDH+aRSA !RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"'>> /etc/apache2/mods-enabled/ssl.conf
+echo "SSLCertificateFile /etc/pki/tls/certs/$CERTIFICATE_NAME" >> /etc/apache2/mods-enabled/ssl.conf
+echo "SSLCertificateKeyFile /etc/pki/tls/private/$KEY_NAME" >> /etc/apache2/mods-enabled/ssl.conf
+echo "SSLCertificateChainFile /etc/pki/tls/certs/$CHAIN_NAME" >> /etc/apache2/mods-enabled/ssl.conf
+
+fi
+
+
+
 
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
   if [ -n "$MYSQL_PORT_3306_TCP" ]; then
