@@ -22,7 +22,6 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-
 ENV WORDPRESS_VERSION 4.5
 ENV WORDPRESS_SHA1 439f09e7a948f02f00e952211a22b8bb0502e2e2
 
@@ -32,7 +31,6 @@ RUN curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VER
 	&& tar -xzf wordpress.tar.gz -C /usr/src/ \
 	&& rm wordpress.tar.gz \
 	&& chown -R www-data:www-data /usr/src/wordpress
-
 
 # Install GIT
 # -------------------------------------------------------------
@@ -55,10 +53,7 @@ RUN 	cd /var/www/html && \
 # -------------------------------------------------------------
 RUN cp /etc/apache2/mods-available/ssl.load  /etc/apache2/mods-enabled
 
-
 VOLUME /etc/pki
-
-
 
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN		chmod 777 /entrypoint.sh
