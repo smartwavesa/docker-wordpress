@@ -14,8 +14,7 @@ docker_build_name : the image's name /tag \n
 
 docker_build_location : the location of the Dockerfile \n
 
-aws_credentials : name of the credentials defined in Jenkins, to login on AWS \n
-"
+aws_credentials : name of the credentials defined in Jenkins, to login on AWS \n"
 
 function help
 {
