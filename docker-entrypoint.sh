@@ -68,7 +68,7 @@ if [ -z "$CHAIN_NAME" ]; then
   CHAIN_NAME='chain.crt'
 fi
 
-echo "ServerName $URL:443" > /etc/apache2/mods-enabled/ssl.conf
+echo "ServerName $URL" > /etc/apache2/mods-enabled/ssl.conf
 echo "SSLProtocol -ALL +TLSv1 +TLSv1.1 +TLSv1.2" >> /etc/apache2/mods-enabled/ssl.conf
 echo "SSLHonorCipherOrder on">> /etc/apache2/mods-enabled/ssl.conf
 echo "SSLCipherSuite ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:HIGH:!MD5:!aNULL:!EDH:!RC4">> /etc/apache2/mods-enabled/ssl.conf
@@ -106,12 +106,12 @@ echo "                 <Directory /usr/lib/cgi-bin>       " >> /etc/apache2/site
 echo "                                 SSLOptions +StdEnvVars    " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                
 echo "                 </Directory>     " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                                         
 
-                                                                                                                                      
- echo "                BrowserMatch \"MSIE [2-6]\" \       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                        
- echo "                                nokeepalive ssl-unclean-shutdown \    " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                    
- echo "                                downgrade-1.0 force-response-1.0       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                   
+                                                                                                                                      #
+# echo "                BrowserMatch \"MSIE [2-6]\" \       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                        
+# echo "                                nokeepalive ssl-unclean-shutdown \    " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                    
+# echo "                                downgrade-1.0 force-response-1.0       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                   
                 # MSIE 7 and newer should be able to use keepalive                                                                                                                        
- echo "                BrowserMatch \"MSIE [17-9]\" ssl-unclean-shutdown       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                    
+# echo "                BrowserMatch \"MSIE [17-9]\" ssl-unclean-shutdown       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                    
                                                                                                                                                                                           
  echo "        </VirtualHost>                " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                                    
 echo " </IfModule>            " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                                                   
