@@ -69,16 +69,59 @@ if [ -z "$CHAIN_NAME" ]; then
 fi
 
 echo "ServerName $URL:443" > /etc/apache2/mods-enabled/ssl.conf
-echo "SSLProtocol all -SSLv2 -SSLv3" >> /etc/apache2/mods-enabled/ssl.conf
+echo "SSLProtocol -ALL +TLSv1 +TLSv1.1 +TLSv1.2" >> /etc/apache2/mods-enabled/ssl.conf
 echo "SSLHonorCipherOrder on">> /etc/apache2/mods-enabled/ssl.conf
-echo 'SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH EDH+aRSA !RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"'>> /etc/apache2/mods-enabled/ssl.conf
+echo "SSLCipherSuite ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:HIGH:!MD5:!aNULL:!EDH:!RC4">> /etc/apache2/mods-enabled/ssl.conf
+echo "SSLCompression off">> /etc/apache2/mods-enabled/ssl.conf
 echo "SSLCertificateFile /etc/pki/tls/certs/$CERTIFICATE_NAME" >> /etc/apache2/mods-enabled/ssl.conf
 echo "SSLCertificateKeyFile /etc/pki/tls/private/$KEY_NAME" >> /etc/apache2/mods-enabled/ssl.conf
-echo "SSLCertificateChainFile /etc/pki/tls/certs/$CHAIN_NAME" >> /etc/apache2/mods-enabled/ssl.conf
+echo "#SSLCertificateChainFile /etc/pki/tls/certs/$CHAIN_NAME" >> /etc/apache2/mods-enabled/ssl.conf
+
+
+echo "<IfModule mod_ssl.c>" > /etc/apache2/sites-enabled/000-default-ssl.conf
+echo "        <VirtualHost _default_:443>" >> /etc/apache2/sites-enabled/000-default-ssl.conf
+echo "                ServerAdmin webmaster@localhost " >> /etc/apache2/sites-enabled/000-default-ssl.conf
+echo "" >> /etc/apache2/sites-enabled/000-default-ssl.conf
+echo "                DocumentRoot /var/www/html" >> /etc/apache2/sites-enabled/000-default-ssl.conf
+
+
+echo "                 ErrorLog ${APACHE_LOG_DIR}/error.log " >> /etc/apache2/sites-enabled/000-default-ssl.conf
+echo "                 CustomLog ${APACHE_LOG_DIR}/access.log combined" >> /etc/apache2/sites-enabled/000-default-ssl.conf
+
+
+echo "              SSLEngine on " >> /etc/apache2/sites-enabled/000-default-ssl.conf
+
+
+echo " SSLCertificateFile /etc/pki/tls/certs/$CERTIFICATE_NAME" >> /etc/apache2/sites-enabled/000-default-ssl.conf
+                
+                
+
+
+echo " SSLCertificateKeyFile /etc/pki/tls/private/$KEY_NAME " >> /etc/apache2/sites-enabled/000-default-ssl.conf
+                                                                                                            
+echo "                 <FilesMatch \"\.(cgi|shtml|phtml|php)$\">         " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                          
+echo "                                 SSLOptions +StdEnvVars  " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                  
+echo "                 </FilesMatch>                            " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                 
+echo "                 <Directory /usr/lib/cgi-bin>       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                       
+echo "                                 SSLOptions +StdEnvVars    " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                
+echo "                 </Directory>     " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                                         
+
+                                                                                                                                      
+ echo "                BrowserMatch \"MSIE [2-6]\" \       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                        
+ echo "                                nokeepalive ssl-unclean-shutdown \    " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                    
+ echo "                                downgrade-1.0 force-response-1.0       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                   
+                # MSIE 7 and newer should be able to use keepalive                                                                                                                        
+ echo "                BrowserMatch \"MSIE [17-9]\" ssl-unclean-shutdown       " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                    
+                                                                                                                                                                                          
+ echo "        </VirtualHost>                " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                                    
+echo " </IfModule>            " >> /etc/apache2/sites-enabled/000-default-ssl.conf                                                                                                                                                                   
+                                                       
+
+sed "s,</VirtualHost>,Redirect permanent / https://$URL \n </VirtualHost>,g" -i /etc/apache2/sites-available/000-default.conf
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet          
 
 fi
-
-
 
 
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
