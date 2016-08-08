@@ -25,6 +25,8 @@ RUN { \
 ENV WORDPRESS_VERSION 4.5
 ENV WORDPRESS_SHA1 439f09e7a948f02f00e952211a22b8bb0502e2e2
 
+ENV URL url
+
 # upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
 RUN curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz \
 	&& echo "$WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c - \
