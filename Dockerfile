@@ -28,6 +28,7 @@ ENV WORDPRESS_SHA1 439f09e7a948f02f00e952211a22b8bb0502e2e2
 ENV URL url
 
 # upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
+# -------------------------------------------------------------
 RUN curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz \
 	&& echo "$WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c - \
 	&& tar -xzf wordpress.tar.gz -C /usr/src/ \
@@ -36,29 +37,59 @@ RUN curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VER
 
 # Install GIT
 # -------------------------------------------------------------
-RUN 	apt-get update && \
-		apt-get -y install git-core
+RUN apt-get update && \
+	apt-get -y install git-core
 
 # Install VI
 # -------------------------------------------------------------
-RUN 	apt-get -y install vim
+RUN apt-get -y install vim
+
+# Install unzip
+#--------------------------------------------------------------
+RUN apt-get -y install unzip
+
+# Install python
+#--------------------------------------------------------------
+RUN apt-get -y install python
+
+# Install aws cli
+#--------------------------------------------------------------
+
+RUN cd /tmp && \
+  	curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && \
+  	unzip awscli-bundle.zip && \
+	./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws && \
+	rm awscli-bundle.zip && \
+	rm -rf awscli-bundle
+
 
 # Cloning the WP-CONTENT from GIT
 # -------------------------------------------------------------
 ARG GIT_REPO 
 
-RUN 	cd /var/www/html && \
-		rm -rf * && \
-		git clone $GIT_REPO /var/www/html
+RUN cd /var/www/html && \
+	rm -rf * && \
+	git clone $GIT_REPO /var/www/html
 		
-#SSL Config
+# SSL Config
 # -------------------------------------------------------------
 RUN cp /etc/apache2/mods-available/ssl.load  /etc/apache2/mods-enabled
 
 VOLUME /etc/pki
 
+# Install additionnal plugins
+# -------------------------------------------------------------
+RUN cd /var/www/html/wp-content/plugins \
+	&& curl -o amazon-web-services.0.3.6.zip -SL https://downloads.wordpress.org/plugin/amazon-web-services.0.3.6.zip \
+	&& curl -o amazon-s3-and-cloudfront.1.0.4.zip -SL https://downloads.wordpress.org/plugin/amazon-s3-and-cloudfront.1.0.4.zip \
+	&& unzip amazon-web-services.0.3.6.zip \
+	&& unzip amazon-s3-and-cloudfront.1.0.4.zip \
+	&& rm amazon-web-services.0.3.6.zip \
+	&& rm amazon-s3-and-cloudfront.1.0.4.zip
+
+
 COPY docker-entrypoint.sh /entrypoint.sh
-RUN		chmod 777 /entrypoint.sh
+RUN	chmod 777 /entrypoint.sh
 # grr, ENTRYPOINT resets CMD now
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]
