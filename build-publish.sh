@@ -94,4 +94,10 @@ $1 `$ecr_get_login`
 
 eval "$1 docker push $4"
 
+eval "docker rm $(docker ps -a  --filter "exited=0" -q --no-trunc)"
+
+eval "docker rm $(docker ps -a  --filter "exited=128" -q --no-trunc)"
+
+eval "docker rmi $(docker images --filter "dangling=true" -q --no-trunc)"
+
 exit 0
